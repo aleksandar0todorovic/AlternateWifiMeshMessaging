@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <ListView
+        android:id="@+id/messageList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stackFromBottom="true" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#dcdcdc"
+        android:orientation="horizontal"
+        android:paddingBottom="5dip"
+        android:paddingLeft="5dip"
+        android:paddingRight="5dip"
+        android:paddingTop="5dip" >
+
+        <EditText
+            android:id="@+id/messageBody"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:hint="@string/type_message"
+            android:inputType="text|textCapSentences|textMultiLine"
+            android:maxLines="10"
+            android:nextFocusRight="@+id/send_button" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/messageSendButton"
+                android:layout_width="wrap_content"
+                android:layout_height="0dip"
+                android:layout_marginLeft="5dip"
+                android:layout_weight="1.0"
+                android:nextFocusLeft="@+id/smsBody"
+                android:text="@string/send_message" />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
