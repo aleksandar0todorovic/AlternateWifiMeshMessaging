@@ -27,14 +27,16 @@ import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiConfiguration.KeyMgmt;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
 public class HostManager implements Runnable {
 	private static final String TAG = "AlternateWifiMeshMessaging HostManager";
-	private static final String AP_NAME = "rftrt";
+	private static final String AP_NAME = "AlternateWifiMeshMessagingHotSpot";
 	protected static final int PORT = 12345;
 	private static final long[] MIN_TIME_RANGE = { 30, 90 }; // in seconds
 	private int readers, writters;
@@ -46,8 +48,9 @@ public class HostManager implements Runnable {
 	private int ID;
 	private ArrayAdapter<String> arrayAdapter;
 	private String identity;
+	private TelephonyManager telephonyManager;
 
-	public HostManager(Context context, Handler handler) {
+	public HostManager(Context context, Handler handler, TelephonyManager telehponyManager) {
 		wifiManager = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
 		this.handler = handler;
@@ -56,6 +59,7 @@ public class HostManager implements Runnable {
 		writters = 0;
 		data = new ArrayList<Data>();
 		ID = 0;
+		this.telephonyManager = telehponyManager;
 
 		arrayAdapter = new ArrayAdapter<String>(context,
 				android.R.layout.simple_list_item_1);
@@ -73,11 +77,17 @@ public class HostManager implements Runnable {
 		}
 
 	}
-	
+
 	private void createIdentity() {
 		int randomInt = random.nextInt();
-		identity = wifiConfig.BSSID + randomInt;
-		
+		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+		if (wifiInfo.getBSSID() != null) {
+			identity = wifiInfo.getBSSID() + randomInt;
+		} else {
+			identity = telephonyManager.getDeviceId()
+					+ randomInt;
+		}
+
 		byte[] byteArray = null;
 		try {
 			byteArray = identity.getBytes("UTF-8");
@@ -92,7 +102,7 @@ public class HostManager implements Runnable {
 			e.printStackTrace();
 		}
 		byte[] digest = md.digest(byteArray);
-		
+
 		identity = new String(digest);
 	}
 
@@ -110,10 +120,10 @@ public class HostManager implements Runnable {
 		long begin = System.currentTimeMillis();
 
 		while (System.currentTimeMillis() < getMinTime() + begin) {
-		
+
 			ArrayList<InetAddress> connectedClients = connectedClientList();
 			ArrayList<Thread> threadList = new ArrayList<Thread>();
-			
+
 			if (connectedClients.size() > 0) {
 				Log.wtf(TAG, connectedClients.size() + "");
 			}
@@ -134,7 +144,7 @@ public class HostManager implements Runnable {
 					Log.e(TAG, "Thread joining error", e);
 				}
 			}
-			
+
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException e) {
@@ -266,9 +276,9 @@ public class HostManager implements Runnable {
 
 		Data tmp = new Data(identity, ID++, message);
 		data.add(tmp);
-		
-		//updateArrayAdapter();
-		
+
+		// updateArrayAdapter();
+
 		handler.sendEmptyMessage(0);
 
 		writeLockOff();
@@ -304,13 +314,12 @@ public class HostManager implements Runnable {
 		}
 
 		writeLockOff();
-		
+
 		handler.sendEmptyMessage(0);
 	}
 
 	private long getMinTime() {
 		long time = random.nextLong() % MIN_TIME_RANGE[1] * 1000;
-		
 
 		if (time < MIN_TIME_RANGE[0] * 1000) {
 			return getMinTime();
@@ -455,8 +464,8 @@ public class HostManager implements Runnable {
 
 			try {
 				JSONObject object = array.getJSONObject(n);
-				Data data = new Data("",
-						object.getInt("ID"), object.getString("DATA"));
+				Data data = new Data("", object.getInt("ID"),
+						object.getString("DATA"));
 				insertData(data);
 			} catch (JSONException e) {
 				Log.e(TAG, "Error parsing JSON object", e);
@@ -542,7 +551,7 @@ class ClientCommunicator implements Runnable {
 		} catch (IOException e) {
 			Log.e(TAG, "Socket opening error", e);
 		}
-		
+
 		try {
 			serverSocket.setSoTimeout(10000);
 		} catch (SocketException e) {
@@ -556,7 +565,7 @@ class ClientCommunicator implements Runnable {
 		try {
 			socket = serverSocket.accept();
 		} catch (IOException e) {
-			//Log.e(TAG, "Socket accepting error", e);
+			// Log.e(TAG, "Socket accepting error", e);
 			return;
 		}
 
