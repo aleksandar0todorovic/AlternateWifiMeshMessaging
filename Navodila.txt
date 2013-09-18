@@ -1,0 +1,10 @@
+Postopek namestitve:
+
+	Izvršilno datoteko "AlternateWifiMeshMessaging.apk" prenesemo na mobilno napravo z Android mobilnim oepracisjkim sistemom.
+	V Androidovih sistemskih nastavitvah dovolimo namešèanje aplikacij iz neznanih virov.
+	Izvršilno datotekom s klikom namestimo na mobilno napravo.
+
+Postopek prevajanja:
+
+	Vsebino zgošèenke uproabimo, kot nov projekt v razvijalnem okoloju eclipse (Eclipse potrebuje tudi Android ADT orodja)
+	Stisnemo prevedi
